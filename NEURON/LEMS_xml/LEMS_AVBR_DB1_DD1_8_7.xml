@@ -1,0 +1,113 @@
+<Lems>
+    
+    <!--
+
+
+Parameters and setting used to generate this network:
+
+    Data reader:                    SpreadsheetDataReader
+    c302 version:                   0.7.6
+    PyOpenWorm version:             0.11.3
+    Cells:                          ['AVBR', 'DB1', 'DD1']
+    Cell stimulated:                ['AVBR']
+    Connection:                     []
+    Connection numbers overridden:  None
+    Connection numbers scaled:      None
+    Connection polarities override: None
+    Muscles:                        []
+
+    Known BioParameters:
+        BioParameter: ca_boyle_erev = 40 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: ca_conc_decay_time = 11.5943 ms (SRC: BlindGuess, certainty 0.1)
+        BioParameter: ca_conc_rho = 0.000238919 mol_per_m_per_A_per_s (SRC: BlindGuess, certainty 0.1)
+        BioParameter: cell_diameter = 5 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_exc_syn_decay = 5 ms (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_exc_syn_erev = 0 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_exc_syn_rise = 1 ms (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_inh_syn_decay = 40 ms (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_inh_syn_erev = -60 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: chem_inh_syn_rise = 2 ms (SRC: BlindGuess, certainty 0.1)
+        BioParameter: initial_memb_pot = -45 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: k_fast_erev = -60 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: k_slow_erev = -60 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: leak_erev = -50 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_ca_boyle_cond_density = 2 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_k_fast_cond_density = 0.2 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_k_slow_cond_density = 4 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_leak_cond_density = 0.005 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_length = 20 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: muscle_spike_thresh = -26 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_ca_boyle_cond_density = 2 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_k_fast_cond_density = 0.2 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_k_slow_cond_density = 2 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_leak_cond_density = 0.02 mS_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_spike_thresh = -26 mV (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_muscle_chem_exc_syn_gbase = .01 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_muscle_chem_inh_syn_gbase = 3 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_muscle_elec_syn_gbase = 0.0005 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_neuron_chem_exc_syn_gbase = .01 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_neuron_chem_inh_syn_gbase = 3 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: neuron_to_neuron_elec_syn_gbase = 0.0005 nS (SRC: BlindGuess, certainty 0.1)
+        BioParameter: resistivity = 12 kohm_cm (SRC: BlindGuess, certainty 0.1)
+        BioParameter: specific_capacitance = 1 uF_per_cm2 (SRC: BlindGuess, certainty 0.1)
+        BioParameter: unphysiological_offset_current = 8.7pA (SRC: Set with param_overrides, certainty 0)
+        BioParameter: unphysiological_offset_current_del = 0 ms (SRC: KnownError, certainty 0)
+        BioParameter: unphysiological_offset_current_dur = 2000 ms (SRC: KnownError, certainty 0)
+
+   
+    -->
+
+    <Target component="sim_AVBR_DB1_DD1_8_7" />
+
+    <!-- Include core NeuroML2 ComponentType definitions -->
+
+    <Include file="Cells.xml" />
+    <Include file="Networks.xml" />
+    <Include file="Simulation.xml" />
+    
+    <Include file="cell_C.xml" />
+    
+    <Include file="cells/AVBR_D.cell.nml" />
+    
+    <Include file="cells/DB1_D.cell.nml" />
+    
+    <Include file="cells/DD1_D.cell.nml" />
+    
+    <Include file="AVBR_DB1_DD1_8_7.net.nml" />
+
+    <!-- End of NeuroML2 content -->
+    
+
+    <Simulation id="sim_AVBR_DB1_DD1_8_7" length="300.0ms" step="0.01ms" target="AVBR_DB1_DD1_8_7">
+
+        <Display id="neurons" title="AVBR_DB1_DD1_8_7: Membrane potential of a number of neurons" timeScale="1ms" xmin="-30.0" xmax="330.0" ymin="-80" ymax="-40">
+            
+            <Line id="AVBR" quantity="AVBR/0/AVBR/v" scale="1mV" color="#f87100" timeScale="1ms" />
+            <Line id="DB1" quantity="DB1/0/DB1/v" scale="1mV" color="#ac15c4" timeScale="1ms" />
+            <Line id="DD1" quantity="DD1/0/DD1/v" scale="1mV" color="#58a09e" timeScale="1ms" />
+            
+        </Display>
+      
+        <Display id="activity_neurons" title="AVBR_DB1_DD1_8_7: Activity of a number of neurons" timeScale="1ms" xmin="-30.0" xmax="330.0" ymin="-0.1" ymax="1.1">
+            
+            <Line id="AVBR" quantity="AVBR/0/AVBR/caConc" scale="1" color="#eaf195" timeScale="1ms" />
+            <Line id="DB1" quantity="DB1/0/DB1/caConc" scale="1" color="#3c00ca" timeScale="1ms" />
+            <Line id="DD1" quantity="DD1/0/DD1/caConc" scale="1" color="#262f1d" timeScale="1ms" />
+
+        </Display>
+
+        <OutputFile id="neurons_v" fileName="AVBR_DB1_DD1_8_7.dat">
+            <OutputColumn id="AVBR_v" quantity="AVBR/0/AVBR/v"/>
+            <OutputColumn id="DB1_v" quantity="DB1/0/DB1/v"/>
+            <OutputColumn id="DD1_v" quantity="DD1/0/DD1/v"/>
+        </OutputFile>
+        
+        <OutputFile id="neurons_activity" fileName="AVBR_DB1_DD1_8_7.activity.dat">
+            <OutputColumn id="AVBR_v" quantity="AVBR/0/AVBR/caConc"/>
+            <OutputColumn id="DB1_v" quantity="DB1/0/DB1/caConc"/>
+            <OutputColumn id="DD1_v" quantity="DD1/0/DD1/caConc"/>
+        </OutputFile>
+    </Simulation>
+
+
+</Lems>
