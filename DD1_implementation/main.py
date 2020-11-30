@@ -1,48 +1,13 @@
+#!/usr/bin/env python3
+
 import arbor
-import numpy, pandas, seaborn # You may have to pip install these.
-import sys
-import platform
-
-# The corresponding generic recipe version of `single_cell_model.py`.
-
-# (1) Define a recipe for a single cell and set of probes upon it.
-
-class single_recipe (arbor.recipe):
-    def __init__(self, cell, probes):
-        # The base C++ class constructor must be called first, to ensure that
-        # all memory in the C++ class is initialized correctly.
-        arbor.recipe.__init__(self)
-        self.the_cell = cell
-        self.the_probes = probes
-
-    def num_cells(self):
-        return 1
-
-    def num_sources(self, gid):
-        return 1
-
-    def cell_kind(self, gid):
-        return arbor.cell_kind.cable
-
-    def cell_description(self, gid):
-        return self.the_cell
-
-    def get_probes(self, gid):
-        return self.the_probes
+import pandas, seaborn # You may have to pip install these.
 
 
 
 
 
-# (2) Create a cell.
-# Associate labels to tags
-labels = arbor.label_dict()
-labels['soma']    = '(tag 0)'
-labels['axon']    = '(tag 1)'
-labels['dend_2']  = '(tag 2)'
-labels['neur_3']  = '(tag 3)'
-labels['neur_4']  = '(tag 4)'
-
+# (1) Create a morphology with a single (cylindrical) segment of length=diameter=6 μm
 # Build a segment tree
 tree = arbor.segment_tree()
 
@@ -92,17 +57,22 @@ neur4_3_28 = tree.append(neur4_2_27, arbor.mpoint(-7.000000e-01, -1.762500e+02, 
 neur4_4_29 = tree.append(neur4_3_28, arbor.mpoint(-7.000000e-01, -1.740500e+02, 1.700000e+01, 0.5744563 / 2), tag=4)
 
 
-# Mark location for synapse at the midpoint of branch 1 (first dendrite)
-#labels['synapse_site'] = '(location 1 0.5)'
 
-# Mark the root of the tree.
-labels['root'] = '(root)'
+# Associate labels to tags
+labels = arbor.label_dict()
+labels['soma']    = '(tag 0)'
+labels['axon']    = '(tag 1)'
+labels['dend_2']  = '(tag 2)'
+labels['neur_3']  = '(tag 3)'
+labels['neur_4']  = '(tag 4)'
+labels['center']  = '(location 0 0.5)'
 
 # create dd1 morphology
 morph = arbor.morphology(tree)
 
 # create cell
 dd1_cell = arbor.cable_cell(morph, labels)
+
 
 # neuroML: <specificCapacitance value="1 uF_per_cm2"/>, <initMembPotential value="-45 mV"/>, <resistivity value="12 kohm_cm"/>
 # set cable properties
@@ -116,102 +86,58 @@ dd1_cell.set_properties(Vm = -45, cm = 0.01, rL = 12000)
 
 # define dynamics / mechanisms
 # neuroML: <channelDensity id="Leak_all" ionChannel="Leak" condDensity="0.02 mS_per_cm2" erev="-50 mV" ion="non_specific"/>
-#leak_all = arbor.mechanism("pas/e=-50/g=2e-05")
 Leak = arbor.mechanism("Leak")
 
 
 # neuroML: <channelDensity id="k_slow_all" ionChannel="k_slow" condDensity="2 mS_per_cm2" erev="-60 mV" ion="k"/>
-# dd1_cell.set_ion("k", int_con = 140, ext_con = 5, method = arbor.mechanism('nernst/x=k'))
-# k_slow_all = arbor.mechanism("k_slow_all", {"g": 2e-03, "e": -60})
 k_slow = arbor.mechanism("k_slow")
 
 
 # neuroML: <channelDensity id="k_fast_all" ionChannel="k_fast" condDensity="0.2 mS_per_cm2" erev="-60 mV" ion="k"/>
-# k_fast_all = arbor.mechanism("k_fast_all", {"g": 2e-04, "e": -60})
 k_fast = arbor.mechanism("k_fast")
 
 # neuroML: <species id="ca" concentrationModel="CaPool" ion="ca" initialConcentration="0 mM" initialExtConcentration="2E-6 mol_per_cm3"/>
-#dd1_cell.set_ion("ca", int_con=0, ext_con=2, method=arbor.mechanism('nernst/x=ca'))
 CaPoolTH = arbor.mechanism("CaPoolTH")
 
 
 # neuroML: <channelDensity id="ca_boyle_all" ionChannel="ca_boyle" condDensity="2 mS_per_cm2" erev="40 mV" ion="ca"/>
 ca_boyle_all = arbor.mechanism("ca_boyle")
 
+
 # put hh dynamics on soma and passive properties on the dendrites
-dd1_cell.paint('"soma"', 'Leak')
+#dd1_cell.paint('"soma"', 'Leak')
 dd1_cell.paint('"soma"', 'k_slow')
 dd1_cell.paint('"soma"', 'k_fast')
 dd1_cell.paint('"soma"', 'CaPoolTH')
 dd1_cell.paint('"soma"', 'ca_boyle')
+#dd1_cell.paint('"soma"', 'hh')
 
-#cell.paint('"dend"', 'pas')
-
-# Attach a single synapse.
-#cell.place('"synapse_site"', 'expsyn')
-
-# define location at centre of soma
-labels['soma_centre'] = '(location 0 0.5)'
+dd1_cell.place('"center"', arbor.iclamp(100, 300, 0.0087))
+dd1_cell.place('"center"', arbor.spike_detector(-26))
 
 
-# place current stimulus on soma centre
-# interface arbor.iclamp(start_time [ms], duration [ms], offset_current [nA])
+# (4) Make single cell model.
+m = arbor.single_cell_model(dd1_cell)
 
-dd1_cell.place('(location 0 0.5)', arbor.iclamp(100, 300, 0.0087)) # 8.7 pA == 0.0087 nA
+# (5) Attach voltage probe sampling at 10 kHz (every 0.1 ms).
+m.probe('voltage', '"center"', frequency=10000)
 
-# neuroML: <spikeThresh value="-26 mV"/>
-# Attach a spike detector with threshold of -26 mV
-dd1_cell.place('(location 0 0.5)', arbor.spike_detector(-26))
-
-
-#print(platform.python_version())
-
-
-#cat = arbor.default_catalogue()
-#print(cat.has("Leak"))
-#print(cat.keys())
-
-
-
-
-
-
-# (3) Instantiate recipe with a voltage probe.
-
-recipe = single_recipe(dd1_cell, [arbor.cable_probe_membrane_voltage('(location 0 0.5)')])
-#arbor.cable_probe('voltage', arbor.location(0, 0.5))
-
-# (4) Instantiate simulation and set up sampling on probe id (0, 0).
-context = arbor.context()
-domains = arbor.partition_load_balance(recipe, context)
-sim = arbor.simulation(recipe, domains, context)
-
-sim.record(arbor.spike_recording.all)
-handle = sim.sample((0, 0), arbor.regular_schedule(0.1))
-
-# (6) Run simulation for 30 ms of simulated activity and collect results.
-
-sim.run(tfinal=500)
-spikes = sim.spikes()
-data, meta = sim.samples(handle)[0]
+# (6) Run simulation for 30 ms of simulated activity.
+m.run(tfinal=500)
 
 # (7) Print spike times, if any.
-
-if len(spikes)>0:
-    print('{} spikes:'.format(len(spikes)))
-    for t in spikes['time']:
-        print('{:3.3f}'.format(t))
+if len(m.spikes)>0:
+    print('{} spikes:'.format(len(m.spikes)))
+    for s in m.spikes:
+        print('{:3.3f}'.format(s))
 else:
     print('no spikes')
 
 # (8) Plot the recorded voltages over time.
-
 print("Plotting results ...")
 seaborn.set_theme() # Apply some styling to the plot
-df = pandas.DataFrame({'t/ms': data[:, 0], 'U/mV': data[:, 1]})
-seaborn.relplot(data=df, kind="line", x="t/ms", y="U/mV", ci=None).savefig('single_cell_recipe_result.svg')
+df = pandas.DataFrame({'t/ms': m.traces[0].time, 'U/mV': m.traces[0].value})
+seaborn.relplot(data=df, kind="line", x="t/ms", y="U/mV",ci=None).savefig('single_cell_model_result.svg')
 
 # (9) Optionally, you can store your results for later processing.
-
-df.to_csv('single_cell_recipe_result.csv', float_format='%g')
-
+df.to_csv('single_cell_model_result.csv', float_format='%g')
