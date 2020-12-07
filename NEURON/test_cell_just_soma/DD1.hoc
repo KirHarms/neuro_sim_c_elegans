@@ -1,0 +1,219 @@
+// Cell: DD1
+/*
+{
+  "id" : "DD1",
+  "sections" : [ {
+    "name" : "Soma",
+    "id" : "Soma",
+    "points3d" : [ "-0.9, -231.95, 6.85, 4.20119", "-0.9, -227.74881, 6.85, 4.20119" ],
+    "comments" : "Section in NeuroML is spherical, so using cylindrical section along Y axis for NEURON\n"
+  } ],
+  "groups" : [ {
+    "name" : "soma_group",
+    "groups" : [ ],
+    "sections" : [ "Soma" ]
+  }, {
+    "name" : "all",
+    "sections" : [ "Soma" ]
+  } ],
+  "specificCapacitance" : [ {
+    "group" : "all",
+    "value" : "1.0"
+  } ],
+  "initMembPotential" : [ {
+    "group" : "all",
+    "value" : "-45.0"
+  } ],
+  "resistivity" : [ {
+    "group" : "all",
+    "value" : "12000.0"
+  } ],
+  "channelDensity" : [ {
+    "id" : "Leak_all",
+    "ionChannel" : "Leak",
+    "ion" : "non_specific",
+    "group" : "all",
+    "condDens" : "2.0E-5",
+    "erev" : "-50.0"
+  }, {
+    "id" : "k_slow_all",
+    "ionChannel" : "k_slow",
+    "ion" : "k",
+    "group" : "all",
+    "condDens" : "0.0019999999",
+    "erev" : "-60.0"
+  }, {
+    "id" : "k_fast_all",
+    "ionChannel" : "k_fast",
+    "ion" : "k",
+    "group" : "all",
+    "condDens" : "2.0E-4",
+    "erev" : "-60.0"
+  }, {
+    "id" : "ca_boyle_all",
+    "ionChannel" : "ca_boyle",
+    "ion" : "ca",
+    "group" : "all",
+    "condDens" : "0.0019999999",
+    "erev" : "40.0"
+  } ],
+  "species" : [ {
+    "id" : "ca",
+    "ion" : "ca",
+    "concentrationModel" : "CaPool",
+    "group" : "all",
+    "initialConcentration" : "0.0",
+    "initialExtConcentration" : "2.0"
+  } ]
+}
+*/
+
+load_file("subiter.hoc")
+
+begintemplate DD1
+
+public init, topol, basic_shape, subsets, geom, memb
+public x, y, z, position
+
+
+//  Some methods for referencing the cells
+
+public toString, netInfo, set_initial_v, set_initial_ion_properties, synlist
+
+
+// Section: Soma, id: Soma, parent: $s.parent
+create Soma
+public Soma
+
+// Group: {name=soma_group, groups=[], sections=[Soma]}
+objref soma_group
+// Group: {name=all, sections=[Soma]}
+objref all
+
+objref synlist
+
+proc init() {
+    topol()
+    geom_nseg()
+    subsets()
+    subsets_inhomogeneous()
+    biophys()
+    biophys_inhomogeneous()
+    synlist = new List()
+    x = y = z = 0
+
+}
+
+proc set_initial_v() {
+    // Taken from the initMembPotential value
+    forsec all v = -45.0  // units: mV
+}
+
+
+proc set_initial_ion_properties() {
+    // From species
+    // Ion: ca on group: all, with concentration model: CaPool
+    forsec all {
+        cai = 0.0  // units: mM
+        cao = 2.0  // units: mM
+    }
+}
+
+
+proc topol() {
+    basic_shape()
+
+}
+
+
+proc basic_shape() {
+
+    // Section: Soma, id: Soma, parent: $s.parent (entry count 0/100)
+    Soma { pt3dclear() }
+    Soma { pt3dadd( -0.9, -231.95, 6.85, 4.20119 ) }
+    Soma { pt3dadd( -0.9, -227.74881, 6.85, 4.20119 ) }
+
+}
+
+
+proc subsets() { local i
+
+    // Group: {name=soma_group, groups=[], sections=[Soma]}
+    soma_group = new SectionList()
+    Soma soma_group.append()
+
+    // Group: {name=all, sections=[Soma]}
+    all = new SectionList()
+    Soma all.append()
+
+}
+
+
+proc subsets_inhomogeneous() {
+}
+
+proc biophys() {
+
+    // Specific capacitance
+    forsec all cm = 1.0  // units: uF/cm2
+
+    // Specific axial resistance/resistivity
+    forsec all Ra = 12000.0  // units: ohm cm
+
+    // Channel densities
+    forsec all {
+        insert Leak
+        gmax_Leak = 2.0E-5  // units: S cm-2
+        e_Leak = -50.0  // units: mV
+    }
+    forsec all {
+        insert k_slow
+        gmax_k_slow = 0.0019999999  // units: S cm-2
+        ek = -60.0  // units: mV
+    }
+    forsec all {
+        insert k_fast
+        gmax_k_fast = 2.0E-4  // units: S cm-2
+        ek = -60.0  // units: mV
+    }
+    forsec all {
+        insert ca_boyle
+        gmax_ca_boyle = 0.0019999999  // units: S cm-2
+        eca = 40.0  // units: mV
+    }
+
+    // Concentration models for species
+    // Ion: ca on group: all, with concentration model: CaPool
+    forsec all {
+        insert CaPool
+    }
+
+}
+
+func H() { // Heaviside function
+    if ($1>=0) return 1
+    if ($1==0) return 0.5
+    return 0
+}
+
+proc biophys_inhomogeneous() {
+}
+
+proc geom_nseg() {
+    // All sections not mentioned here have nseg = 1
+}
+
+
+proc position() { local i
+    forsec all {
+        for i = 0, n3d()-1 {
+            pt3dchange(i, $1+x3d(i), $2+y3d(i), $3+z3d(i), diam3d(i))
+        }
+    }
+    x = $1  y = $2  z = $3
+}
+
+
+endtemplate DD1
+
+
