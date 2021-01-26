@@ -17,7 +17,7 @@ class single_recipe (arbor.recipe):
         self.the_cat = arbor.default_catalogue()
 
         self.the_props = arbor.cable_global_properties()
-        self.the_props.set_property(Vm = -45, cm = 0.01, rL = 12000)
+        #self.the_props.set_property(Vm = -45, cm = 0.01, rL = 12000)
         #self.the_props.set_ion(ion='na', int_con=10, ext_con=140, rev_pot=50, method='nernst/na')
         #self.the_props.set_ion(ion='k', int_con=54.4, ext_con=2.5, rev_pot=-77)
         #self.the_props.set_ion(ion='ca', int_con=5e-5, ext_con=2, rev_pot=132.5)
@@ -151,7 +151,7 @@ for j, value in enumerate(offset_values):
     # cm = membrane capacitance (0.01 F / m²)
     # rL = axial resistivity of cable (12000 Ohm * cm)
     # tempK = temperature in Kelvin (not provided by c302)
-    decor.set_property(Vm=-45, cm=0.01, rL=12000)
+    decor.set_property(Vm=-45, cm=0.01, rL=12000, tempK = 279.45)
 
     # Paint density mechanisms. In the c302 approximation the C. elegans cell is assumed to possess mechanisms that are the same throughout
     # the cell membrane.
